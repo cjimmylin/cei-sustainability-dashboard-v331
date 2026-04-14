@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecological Sustainability &amp; Data Centers — Dashboard v3.3.1</title>
+<!-- OpenGraph / social sharing (critic #8) -->
+<meta property="og:title" content="Ecological Sustainability in AI Governance — Dashboard v3.3.1">
+<meta property="og:description" content="Interactive audit of 3,044 AI governance statements on data-center environmental impact. Only 0.95% engage substantively — a universal governance–reality gap.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<!-- Google Fonts: SRI exempt because responses vary per user-agent (dynamic font subsetting). Using referrerpolicy to prevent URL leakage. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" referrerpolicy="no-referrer">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" integrity="sha384-o5uz97et3bErHvpKfD4Jz4n0JfhJDWABFuF4NP+iEEDxE1VwMWJ19QGR0lqFZnr6" crossorigin="anonymous"></script>
+<script src="data.js?v=3.3.1"></script>
+<style>
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2128;
+  --border: #30363d;
+  --border-subtle: #21262d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --accent3: #f0883e;
+  --danger: #f85149;
+  --region-cee: #d2a8ff;
+  --region-sea: #f0883e;
+  --region-mena: #58a6ff;
+}
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-card: #ffffff;
+  --border: #d0d7de;
+  --border-subtle: #e1e4e8;
+  --text-primary: #1f2328;
+  --text-secondary: #656d76;
+  --accent: #0969da;
+  --accent2: #1a7f37;
+  --accent3: #bc4c00;
+  --danger: #cf222e;
+  --region-cee: #6e40aa;
+  --region-sea: #953800;
+  --region-mena: #0550ae;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 0;
+  min-height: 100vh;
+}
+.navbar {
+  background: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+}
+.navbar-brand {
+  color: var(--text-primary) !important;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.nav-tabs {
+  border-bottom: 1px solid var(--border);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.nav-tabs .nav-link {
+  color: var(--text-secondary);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+}
+.nav-tabs .nav-link:hover { color: var(--text-primary); border-bottom-color: var(--text-secondary); }
+.nav-tabs .nav-link.active { color: var(--accent); background: transparent; border-bottom: 2px solid var(--accent); }
+.tab-content { padding: 1.2rem; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.7rem 1rem;
+  color: var(--text-primary);
+}
+.card-body { padding: 1rem; }
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+.stat-card .stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); }
+.stat-card .stat-label { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.3rem; }
+.chart-container { width: 100%; min-height: 400px; }
+.chart-container-sm { width: 100%; min-height: 300px; }
+table.data-table { width: 100%; font-size: 0.8rem; border-collapse: collapse; }
+table.data-table th {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  position: sticky;
+  top: 0;
+}
+table.data-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+table.data-table tr:hover td { background: rgba(88, 166, 255, 0.05); }
+.badge-tier-A { background: #3fb950; color: #000; }
+.badge-tier-B { background: #58a6ff; color: #000; }
+.badge-tier-C { background: #f0883e; color: #000; }
+.badge-tier-D { background: #8b949e; color: #fff; }
+.badge-tier-zero { background: var(--border); color: var(--text-secondary); }
+.annotation {
+  background: rgba(88,166,255,0.08);
+  border-left: 3px solid var(--accent);
+  color: var(--text-primary);
+  padding: 0.7rem 1rem;
+  margin: 0.8rem 0;
+  font-size: 0.82rem;
+  border-radius: 0 6px 6px 0;
+}
+.annotation strong,
+.annotation em,
+.annotation p,
+.annotation a { color: var(--text-primary); }
+.card-body p,
+.card-body li,
+.card-body strong,
+.card-body td,
+.card-body th { color: var(--text-primary); }
+.table-responsive-wrap[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.provenance {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 2rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+.thread-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  margin: 0.1rem;
+}
+.literature-context {
+  background: rgba(240,136,62,0.08);
+  border-left: 3px solid var(--accent3);
+  padding: 0.7rem 1rem;
+  margin: 0.5rem 0;
+  font-size: 0.8rem;
+  border-radius: 0 6px 6px 0;
+}
+.literature-context .ext-badge {
+  display: inline-block;
+  background: var(--accent3);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+.geo-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.geo-card .geo-headline {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent3);
+  margin-bottom: 0.4rem;
+}
+.geo-card .geo-stat {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--danger);
+}
+.geo-card .geo-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+.geo-fact-list {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  padding-left: 1.2rem;
+  margin: 0.4rem 0;
+}
+.geo-fact-list li { margin-bottom: 0.2rem; }
+.geo-source-ref {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 0.3rem;
+}
+/* === Responsive Breakpoints === */
+.nav-tabs-wrap { position: relative; }
+.skip-link:focus, .skip-link:focus-visible {
+  position: fixed !important;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1050;
+  padding: 0.75rem 1rem;
+  background: #58a6ff;
+  color: #fff !important;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+@media (max-width: 992px) {
+  .row.g-3 > [class*="col-md-3"] { flex: 0 0 33.333%; max-width: 33.333%; }
+  .chart-container, .chart-container-sm { min-height: 350px; }
+  table.data-table { font-size: 0.78rem; }
+}
+@media (max-width: 768px) {
+  .stat-card .stat-value { font-size: 1.5rem; }
+  .chart-container { min-height: 300px; }
+}
+@media (max-width: 576px) {
+  .row.g-3 > [class*="col-6"],
+  .row.g-3 > [class*="col-md-3"] { flex: 0 0 50%; max-width: 50%; }
+  .nav-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .nav-tabs .nav-link {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.78rem;
+  }
+  .card-body { padding: 0.7rem; }
+  .chart-container, .chart-container-sm { min-height: 250px; }
+  table.data-table { font-size: 0.75rem; }
+  .table-responsive-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .navbar-brand {
+    font-size: 0.85rem;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.2;
+    max-width: 100%;
+    display: inline-block;
+  }
+  .nav-tabs-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(to right, transparent, var(--bg-primary));
+    pointer-events: none;
+  }
+}
+/* === Print Stylesheet === */
+@media print {
+  @page { margin: 1in; }
+  * { color-adjust: exact; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff !important; color: #000 !important; font-size: 11pt; }
+  .navbar, .nav-tabs, .btn, [data-theme-toggle], .nav-tabs button { display: none !important; }
+  .tab-pane { display: block !important; page-break-before: always; }
+  .tab-pane:first-child { page-break-before: auto; }
+  .card {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .card-header {
+    background: #f5f5f5 !important;
+    color: #000 !important;
+    border-bottom: 1px solid #ccc !important;
+  }
+  .card-body { color: #000 !important; }
+  .stat-card {
+    background: #f9f9f9 !important;
+    border: 1px solid #ccc !important;
+  }
+  .stat-card .stat-value { color: #1a1a1a !important; }
+  .stat-card .stat-label { color: #444 !important; }
+  .annotation {
+    background: #f5f5f5 !important;
+    border-left-color: #333 !important;
+    color: #000 !important;
+  }
+  .literature-context {
+    background: #faf5f0 !important;
+    border-left-color: #666 !important;
+    color: #000 !important;
+  }
+  .geo-card {
+    background: #f9f9f9 !important;
+    border: 1px solid #ccc !important;
+  }
+  .geo-card .geo-headline { color: #333 !important; }
+  .geo-card .geo-stat { color: #c00 !important; }
+  .geo-card .geo-stat-label,
+  .geo-source-ref,
+  .geo-fact-list { color: #444 !important; }
+  table.data-table th {
+    background: #eee !important;
+    color: #000 !important;
+    border-bottom: 2px solid #999 !important;
+  }
+  table.data-table td {
+    color: #000 !important;
+    border-bottom: 1px solid #ccc !important;
+  }
+  caption {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    clip: auto !important;
+    clip-path: none !important;
+    overflow: visible !important;
+    color: #000 !important;
+    font-weight: 600;
+    text-align: left;
+    margin-bottom: 0.3rem;
+    white-space: normal !important;
+    padding: 0.2rem 0;
+  }
+  .thread-badge { border: 1px solid #999 !important; color: #000 !important; background: #eee !important; }
+  .provenance { color: #444 !important; border-top-color: #ccc !important; }
+  details { border-color: #ccc !important; background: #fff !important; }
+  details[open] { break-inside: avoid; }
+  details > summary { color: #000 !important; }
+  details:not([open]) { open: true; }
+  details > summary::marker, details > summary::-webkit-details-marker { color: #444 !important; }
+  [id^="chart-"] { width: 800px !important; max-width: 100%; }
+  .chart-container, .chart-container-sm { width: 800px !important; max-width: 100%; }
+  body::after {
+    content: "Dashboard v3.3.1 | Generated: 2026-04-13 | Source: Tapestry (Lin, 2026) | Pipeline: hybrid_sustainability_scorer.py";
+    display: block;
+    text-align: center;
+    font-size: 9pt;
+    color: #666;
+    margin-top: 2rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #ccc;
+  }
+}
+details { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.5rem; background: var(--bg-card); }
+details > summary { padding: 0.6rem 1rem; cursor: pointer; color: var(--text-primary); font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+details > summary::marker, details > summary::-webkit-details-marker { color: var(--text-secondary); }
+details > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details[open] > summary { border-bottom: 1px solid var(--border); }
+details > .detail-body { padding: 0.8rem 1rem; }
+.nav-tabs .nav-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.nav-tabs button.nav-link { background: none; border: none; cursor: pointer; }
+.theme-toggle {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s, color 0.2s;
+}
+.theme-toggle:hover { background: var(--bg-secondary); }
+.theme-table {
+  width: 100%;
+  font-size: 0.82rem;
+  border-collapse: collapse;
+  max-width: 600px;
+}
+.theme-table th {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.theme-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+[data-theme="light"] .annotation { background: rgba(9,105,218,0.06); }
+[data-theme="light"] .literature-context { background: rgba(188,76,0,0.06); }
+[data-theme="light"] table.data-table tr:hover td { background: rgba(9,105,218,0.04); }
+[data-theme="light"] .skip-link:focus, [data-theme="light"] .skip-link:focus-visible { background: var(--accent); }
+@media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+</style>
+</head>
+<body>
+<a class="visually-hidden-focusable skip-link" href="#main">Skip to main content</a>
+
+<nav class="navbar" style="display:flex;justify-content:space-between;align-items:center;">
+  <span class="navbar-brand">Ecological Sustainability &amp; Data Centers — Tapestry Analysis v3.3.1</span>
+  <button class="theme-toggle" id="themeToggle" aria-label="Switch to light theme" aria-pressed="false" title="Toggle theme">Light</button>
+</nav>
+
+<div class="container-fluid px-3">
+  <div class="nav-tabs-wrap">
+  <ul class="nav nav-tabs mt-2" id="mainTabs" role="tablist">
+    <li class="nav-item" role="presentation"><button class="nav-link active" role="tab" id="trigger-overview" data-tab="tab-overview" aria-selected="true" aria-controls="tab-overview" tabindex="0">Overview</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" role="tab" id="trigger-threads" data-tab="tab-threads" aria-selected="false" aria-controls="tab-threads" tabindex="-1">Thread Analysis</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" role="tab" id="trigger-heatmap" data-tab="tab-heatmap" aria-selected="false" aria-controls="tab-heatmap" tabindex="-1">Org &times; Thread</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" role="tab" id="trigger-top" data-tab="tab-top" aria-selected="false" aria-controls="tab-top" tabindex="-1">Top Statements</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" role="tab" id="trigger-timeline" data-tab="tab-timeline" aria-selected="false" aria-controls="tab-timeline" tabindex="-1">Timeline</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" role="tab" id="trigger-greenwash" data-tab="tab-greenwash" aria-selected="false" aria-controls="tab-greenwash" tabindex="-1">Greenwash and Framing</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" role="tab" id="trigger-extra" data-tab="tab-extra" aria-selected="false" aria-controls="tab-extra" tabindex="-1">Missing Voices</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" role="tab" id="trigger-methods" data-tab="tab-methods" aria-selected="false" aria-controls="tab-methods" tabindex="-1">Methods</button></li>
+  </ul>
+  </div>
+
+  <div class="tab-content mt-1" id="main" tabindex="-1">
+
+    <!-- TAB 1: Overview -->
+    <div class="tab-pane active" id="tab-overview" role="tabpanel" aria-labelledby="trigger-overview" tabindex="0">
+
+      <!-- source: PAPER/20260410-abstract-draft.md + PAPER/20260410-methods-draft.md §3.1-3.4 -->
+      <section class="about-study mt-2" aria-labelledby="about-study-heading">
+        <div class="annotation" style="border-left:3px solid var(--accent2);background:rgba(63,185,80,0.08);padding:1rem;">
+          <h3 id="about-study-heading" style="margin:0 0 0.5rem 0;font-size:0.95rem;color:var(--accent2);">About This Study</h3>
+          <p class="tab-intro-hook" style="margin-bottom:0.6rem;font-size:0.85rem;">
+            This dashboard presents results from a systematic audit of <strong>3,044 AI governance statements</strong> worldwide, examining how they treat data-center environmental impact. Statements were scored by a reliability-tested rubric (ICC&nbsp;=&nbsp;0.977, &kappa;&nbsp;=&nbsp;0.90). <strong>The headline finding: sustainability discourse is near-absent across all regions &mdash; a universal governance&ndash;reality gap, not an Anglophone privilege gap.</strong>
+          </p>
+          <!-- source: PAPER/20260410-introduction-draft.md §1 + PAPER/20260410-literature-review-draft.md §2 -->
+          <details>
+            <summary style="font-size:0.82rem;">Background: Why data-center sustainability in AI governance?</summary>
+            <div class="detail-body" style="font-size:0.82rem;color:var(--text-secondary);">
+              <p>Global AI governance addresses fairness, transparency, and accountability in detail, yet whether it confronts the <em>material environmental burdens</em> of AI infrastructure remains largely unexamined. Data centers consumed an estimated 460&nbsp;TWh of electricity in 2024 (1.5&ndash;2% of global supply), with projections reaching 945&nbsp;TWh by 2030. US data centers alone consumed 660&nbsp;billion liters of cooling water in 2023. Five major hyperscalers &mdash; Microsoft, Google, Amazon, Meta, and Oracle &mdash; signed nuclear power agreements in 2024. This study examines a specific question: does the global corpus of AI governance statements engage substantively with these infrastructure costs, or does governance discourse systematically fail to represent the knowledge of affected communities?</p>
+              <p style="margin-bottom:0;">The theoretical framework draws on <strong>epistemic laziness</strong> (Medina, 2013) &mdash; a dispositional failure of institutions to develop hermeneutical sensitivity toward marginalized knowledge. Unlike contributory injustice (Dotson, 2011), which requires individual willfulness, epistemic laziness scales to institutional analysis: governance-producing institutions fail to develop the interpretive resources needed to understand the environmental harms of the technology they seek to govern.</p>
+            </div>
+          </details>
+          <!-- source: PAPER/20260410-methods-draft.md §3.1-3.4 -->
+          <details>
+            <summary style="font-size:0.82rem;">Methods: How was this study conducted?</summary>
+            <div class="detail-body" style="font-size:0.82rem;color:var(--text-secondary);">
+              <p>The study uses a hybrid keyword&ndash;LLM scoring pipeline applied to the <strong>Tapestry database</strong> (Lin, 2026), a collection of 3,044 AI governance statements from ~3,460 organizations across 73 countries (1998&ndash;2026). The pipeline has three stages:</p>
+              <ol style="margin-bottom:0.5rem;">
+                <li><strong>Keyword pre-filter:</strong> 2,820 text extracts scanned against a 6-thread keyword architecture. 431 candidates (14.1%) passed threshold &ge;&nbsp;10.</li>
+                <li><strong>LLM deep scoring:</strong> Each candidate scored by Claude across 11 sustainability dimensions (6 core threads + 5 extended dimensions) plus greenwash risk and actionability. Yields 302 nonzero, 29 Tier&nbsp;A (&ge;&nbsp;50).</li>
+                <li><strong>Contrast analysis:</strong> 21 external empirical sources &mdash; selected by a 16-member expert council &mdash; benchmark governance discourse against the current state of knowledge on disability, gendered labor, informal economy, religious ethics, and geographic burden.</li>
+              </ol>
+              <p style="margin-bottom:0;">Test&ndash;retest reliability: ICC(2,1)&nbsp;=&nbsp;0.977 overall; &kappa;&nbsp;=&nbsp;0.90 for framing classification. False-negative rate: 2.7% (Wilson 95% CI: 0.7&ndash;9.2%). <strong>Limitation:</strong> The expert council consists of LLM-generated disciplinary perspectives, not human domain experts &mdash; creating a recursive limitation where LLM scores governance using a rubric designed through LLM-mediated deliberation.</p>
+            </div>
+          </details>
+          <!-- source: data.js TIER_COUNTS + PAPER/20260410-results-draft.md -->
+          <details>
+            <summary style="font-size:0.82rem;">How to read Tier A / B / C / D</summary>
+            <div class="detail-body" style="font-size:0.82rem;color:var(--text-secondary);">
+              <p>Each statement is scored 0&ndash;100 on each dimension based on the depth and specificity of its sustainability engagement. Tiers classify the <em>overall sustainability composite</em>:</p>
+              <ul style="margin-bottom:0;">
+                <li><strong>Tier A (&ge;&nbsp;50):</strong> Deep substantive engagement &mdash; addresses specific data center impacts, proposes governance mechanisms. <strong>29 statements</strong> (0.95% of corpus).</li>
+                <li><strong>Tier B (25&ndash;49):</strong> Moderate engagement with some specificity. <strong>15 statements.</strong></li>
+                <li><strong>Tier C (10&ndash;24):</strong> Minimal &mdash; mentions sustainability as context, no substantive analysis. <strong>100 statements.</strong></li>
+                <li><strong>Tier D (1&ndash;9):</strong> Incidental keyword match with no real content. <strong>158 statements.</strong></li>
+                <li><strong>Zero:</strong> No sustainability content detected after LLM review. <strong>129 statements</strong> (keyword false positives).</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <div class="annotation mt-2" style="border-left:3px solid var(--accent);background:rgba(56,139,253,0.06);">
+        <strong>What This Dashboard Measures.</strong>
+        This dashboard presents results from a systematic sustainability analysis of 3,044 AI governance statements drawn from the Tapestry database (Lin, 2026) &mdash; the most comprehensive global catalog of official AI principles and governance positions, spanning governments, corporations, civil society organizations, religious bodies, intergovernmental organizations, and professional associations from 1998 through 2026. The central finding is one of discursive absence: only 0.95% of these statements (29 out of 3,044) engage substantively with ecological sustainability &mdash; the material infrastructure that AI systems require, including energy consumption, water use, land conversion, and the labor conditions of data supply chains. This is not a study of what governance says about sustainability. It is a study of what governance systematically <em>fails</em> to say about the physical and environmental costs of the technology it seeks to govern.
+      </div>
+
+      <div class="row g-3 mt-1">
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" id="ov-total"></div><div class="stat-label">Statements Scored</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" id="ov-nonzero"></div><div class="stat-label">With Relevance</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:var(--accent2)" id="ov-tiera"></div><div class="stat-label">Tier A (score &ge; 50)</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:var(--accent3)" id="ov-mean"></div><div class="stat-label">Mean Score</div></div></div>
+      </div>
+
+      <div class="annotation mt-3">
+        <strong>The Scoring Funnel &mdash; From 3,044 Statements to 29 Substantive Engagements.</strong>
+        The four stat cards above trace a steep filtering process. Of 3,044 total statements in the Tapestry database, 431 passed an initial keyword filter for sustainability-relevant language (14.1%). Of those, 302 received nonzero scores from LLM-based multi-dimensional assessment (9.9% of the full corpus). Only 29 achieved Tier A &mdash; deep substantive engagement &mdash; representing 0.95% of all AI governance statements worldwide. The mean score of 11.8 out of 100 and median of 8 mean that even among statements that mention sustainability, most do so only in passing, without substantive analysis of environmental impacts, resource demands, or accountability mechanisms.
+      </div>
+
+      <details class="mt-2" style="font-size:0.85rem;">
+        <summary style="color:var(--accent);cursor:pointer;font-weight:600;">Key Findings at a Glance</summary>
+        <div class="mt-2" style="font-size:0.82rem;color:var(--text-secondary);">
+          <ul>
+            <li><strong>0.95% substantive engagement:</strong> Only 29 of 3,044 AI governance statements achieve Tier A (deep, sustained engagement with ecological sustainability) &mdash; fewer than 1 in 100.</li>
+            <li><strong>The shallow middle:</strong> 66.6% of the 431 keyword-filtered statements scored at Tier D or zero, meaning two-thirds of governance documents that mention sustainability-related terms do so without any substantive engagement.</li>
+            <li><strong>The water blind spot:</strong> Only 38 statements mention water at all, and just 9 achieve high engagement &mdash; yet US data centers consumed 660 billion liters of cooling water in 2023.</li>
+            <li><strong>The nuclear gap:</strong> No governance statement scores above 40 on nuclear/energy sources, despite all five major hyperscalers (Microsoft, Google, Amazon, Meta, Oracle) signing nuclear power deals in 2024.</li>
+            <li><strong>Civil society carries the load:</strong> Civil society organizations represent approximately 18% of the corpus but account for the majority of Tier A entries, an engagement ratio of roughly 4.6:1 relative to their corpus share.</li>
+            <!-- Derived from geographic-gap-analysis.py WE/NA scan 2026-04-11 — see STATISTICS/20260411-baseline-derivation.md -->
+            <li><strong>The governance-reality paradox:</strong> Regions with the fastest data center expansion do not necessarily have stronger sustainability governance. Western Europe (21.1%) and North America (18.9%) engage at only a modestly higher rate than Central &amp; Eastern Europe (14.7%), Southeast Asia (15.3%), and MENA (14.1%) &mdash; the gap is narrower than previously assumed, but engagement is thin across every region.</li>
+            <li><strong>Disability as structural exclusion:</strong> 26 of 27 statements with any disability score receive exactly 5 (the minimum nonzero value). The corpus maximum of 20 is the sharpest epistemic boundary in the dataset.</li>
+            <li><strong>One statement stands alone:</strong> STMT-2599 (Canadian Union of Public Employees) is the sole statement scoring nonzero on all three underrepresented dimensions: gendered labor (35), disability (20, the corpus maximum), and informal economy (15).</li>
+            <li><strong>Greenwash follows framing:</strong> Solution-framed statements show 2.3&times; the greenwash risk of problem-framed statements. Dual-framed statements show the highest risk of all (mean 22.5).</li>
+            <li><strong>Government silence:</strong> 90.6% of government statements adopt neutral framing despite governments being the primary regulatory authority for data center environmental impacts.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="row g-3 mt-2">
+        <div class="col-md-6">
+          <div class="card"><div class="card-header">Tier Distribution</div><div class="card-body"><div id="chart-tier" class="chart-container-sm" role="img" aria-label="Tier distribution donut chart"></div></div></div>
+
+          <div class="annotation mt-2">
+            <strong>Understanding the Tier Distribution.</strong>
+            Tier A (&ge;50) = 29 statements with deep substantive treatment. Tier B (25&ndash;49) = moderate engagement. Tier C (10&ndash;24) = minimal acknowledgment. Tier D (1&ndash;9) = incidental mentions. An additional 129 scored zero after LLM review (keyword false positives). 66.6% of scored statements fall in Tier D or zero. The distribution is heavily right-skewed: sustainability appears as a <em>word</em> in governance, but rarely as a <em>subject</em> of governance analysis.
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card"><div class="card-header">Organization Type Coverage</div><div class="card-body"><div id="chart-orgtype" class="chart-container-sm" role="img" aria-label="Organization type coverage bar chart"></div></div></div>
+
+          <div class="annotation mt-2">
+            <strong>Who Governs Sustainability &mdash; and Who Does Not.</strong>
+            Civil society organizations (Greenpeace, Sierra Club, NAACP, Stand.earth) dominate the top tier with the most substantive data center sustainability analysis. Government statements are numerous but overwhelmingly superficial (90.6% neutral framing). Industry scores moderately on energy but avoids water, disability, and labor dimensions &mdash; suggesting selective disclosure. Intergovernmental bodies (UN, OECD, EU) favor solution-framing over problem identification. Religious organizations show unexpected strength in ethical/religious ecology but limited technical depth.
+          </div>
+        </div>
+      </div>
+
+      <!-- Derived from geographic-gap-analysis.py WE/NA scan 2026-04-11 — see STATISTICS/20260411-baseline-derivation.md -->
+      <div class="annotation mt-3" style="border-left:3px solid #f85149;">
+        <strong>The Governance-Reality Paradox.</strong>
+        Sustainability engagement is thin across every region of the corpus. Mature-governance regions (Western Europe 21.1%, North America 18.9%) score only modestly higher than rapidly-expanding regions (Central &amp; Eastern Europe 14.7%, Southeast Asia 15.3%, MENA 14.1%). The uniformly low rates &mdash; nowhere exceeding 22% &mdash; indicate that the shortfall is not a regional information gap waiting to be filled, but a structural deficiency in who produces governance knowledge, whose expertise is consulted, and what institutional mechanisms exist to surface local environmental impacts.
+      </div>
+    </div>
+
+    <!-- TAB 2: Thread Analysis -->
+    <div class="tab-pane" id="tab-threads" role="tabpanel" aria-labelledby="trigger-threads" tabindex="0">
+
+      <!-- source: PAPER/20260410-methods-draft.md §3.2 + PAPER/20260410-results-draft.md §4.1 -->
+      <p class="tab-intro-hook mt-2" style="font-size:0.85rem;color:var(--text-primary);margin-bottom:0.5rem;">
+        <strong>Thread Analysis</strong> breaks sustainability discourse into six dimensions &mdash; energy, water, nuclear, climate, cost tracking, and policy. The headline finding: cost tracking and nuclear engagement are near-empty across all 431 scored statements, leaving governance blind to per-query environmental costs and the nuclear power deals driving data center expansion.
+      </p>
+
+      <div class="annotation mt-2" style="border-left:3px solid var(--accent);background:rgba(56,139,253,0.06);">
+        <strong>What Are &ldquo;Threads&rdquo;?</strong>
+        The scoring rubric evaluates sustainability engagement across six core dimensions &mdash; each representing a distinct category of environmental impact from AI data center infrastructure. <strong>Energy</strong> captures engagement with electricity consumption, power sourcing, and grid impacts. <strong>Water</strong> measures attention to cooling water consumption and watershed effects. <strong>Nuclear/Energy Sources</strong> tracks governance of nuclear power purchase agreements and alternative baseload energy. <strong>Climate</strong> covers carbon emissions, Scope 1/2/3 footprints, and offset mechanisms. <strong>Cost Tracking</strong> assesses per-query environmental cost accounting and lifecycle analysis. <strong>Policy</strong> evaluates engagement with environmental regulation, siting requirements, and sustainability standards. Each thread is scored 0&ndash;100 based on depth and specificity of engagement.
+      </div>
+
+      <div class="card mt-2"><div class="card-header">Thread Comparison &mdash; 6 Research Threads</div><div class="card-body"><div id="chart-threads" class="chart-container" role="img" aria-label="Thread comparison bar chart showing 6 research threads"></div></div></div>
+
+      <div class="annotation">
+        <strong>Thread Engagement Hierarchy.</strong>
+        <strong>Energy</strong> (102 nonzero, 30 high-scoring) and <strong>climate</strong> (108 nonzero, 25 high-scoring) are the best-addressed threads &mdash; they align with existing corporate ESG reporting frameworks that governance actors already understand. <strong>Policy</strong> is mentioned most frequently (205 statements) but often only superficially. <strong>Water</strong> is systematically underrepresented (38 nonzero, only 9 high-scoring) despite US data centers consuming 660 billion liters of cooling water in 2023. <strong>Cost tracking</strong> (56 nonzero, only 4 high-scoring) shows minimal substantive engagement. <strong>Nuclear</strong> has the starkest gap: 43 nonzero entries but a maximum score of 40 &mdash; zero statements achieve Tier A engagement.
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #f85149;">
+        <strong>The Nuclear Void.</strong>
+        No governance statement scores above 40 on nuclear energy &mdash; meaning zero Tier A engagement &mdash; despite nuclear power being the primary baseload strategy pursued by all five major hyperscalers. Microsoft signed a 20-year deal to restart Three Mile Island Unit 1 (September 2024). Google partnered with Kairos Power for small modular reactors (October 2024). Amazon acquired the Cumulus Data Center campus adjacent to Talen Energy&rsquo;s nuclear station. Meta issued an RFP seeking 1&ndash;4 GW of nuclear capacity (December 2024). Oracle announced a campus exceeding 1 GW powered by SMRs. This governance absence reflects three factors: <em>temporal lag</em> (these deals postdate most governance statements in the corpus), <em>corpus composition</em> (civil society organizations dominating top-scoring statements lack energy systems engineering expertise and orient advocacy toward renewables), and a <em>measurement challenge</em> (95.9% of initial keyword hits for &ldquo;nuclear&rdquo; referred to weapons proliferation, requiring extensive false-positive filtering).
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #1f6feb;">
+        <strong>The Water Blind Spot.</strong>
+        Only 38 statements mention water at all, and just 9 achieve high engagement &mdash; yet water is one of the primary environmental impacts of data center operations. US data centers consumed 660 billion liters of cooling water in 2023. Liquid cooling systems for high-density AI workloads dramatically increase per-rack water demand. Gulf states are pursuing trillion-dollar AI data center ambitions in one of the world&rsquo;s most water-stressed regions. Governance lacks hydrological expertise to articulate water consumption as a governance concern &mdash; the AI ethics community that produces most governance discourse has no tradition of engaging with water resource management.
+      </div>
+
+      <div class="card"><div class="card-header">Thread Co-occurrence (Tier A+B Statements)</div><div class="card-body"><div id="chart-cooccur" class="chart-container" role="img" aria-label="Thread co-occurrence heatmap for Tier A and B statements"></div></div></div>
+
+      <div class="annotation">
+        <strong>What Co-occurrence Reveals.</strong>
+        This heatmap shows which sustainability threads appear together in Tier A and B statements. <strong>Energy and climate are tightly coupled</strong> &mdash; they co-occur at the highest rate, suggesting many governance actors frame them as a single &ldquo;carbon footprint&rdquo; issue. This raises a concern: the rubric may double-count a single underlying construct rather than measuring two independent dimensions, potentially inflating the apparent breadth of governance coverage. <strong>Water and energy are decoupled</strong> &mdash; even statements engaging substantively with energy consumption ignore water impacts, revealing that governance treats energy as a climate issue but not as a resource consumption issue. <strong>Nuclear is isolated</strong> from all other threads, confirming its status as an epistemic orphan in governance discourse.
+      </div>
+    </div>
+
+    <!-- TAB 3: Org × Thread Heatmap -->
+    <div class="tab-pane" id="tab-heatmap" role="tabpanel" aria-labelledby="trigger-heatmap" tabindex="0">
+
+      <!-- source: PAPER/20260410-results-draft.md §4.2 -->
+      <p class="tab-intro-hook mt-2" style="font-size:0.85rem;color:var(--text-primary);margin-bottom:0.5rem;">
+        <strong>Organization &times; Thread Heatmap</strong> reveals that what organizations discuss depends on who they are accountable to &mdash; civil society dominates environmental depth, industry engages selectively where ESG reporting already requires disclosure, and government statements are broad but shallow across every thread.
+      </p>
+
+      <div class="annotation mt-2" style="border-left:3px solid var(--accent);background:rgba(56,139,253,0.06);">
+        <strong>How Organization Type Shapes Sustainability Engagement.</strong>
+        This heatmap reveals how different types of governance actors engage with each sustainability dimension. The key question it answers: does <em>what</em> organizations discuss depend on <em>who</em> they are accountable to? The pattern is clear &mdash; organizational mandate and constituency structure predict which sustainability threads receive attention and which are systematically ignored.
+      </div>
+
+      <div class="annotation">
+        <strong>How to Read This Heatmap.</strong>
+        Rows represent organization types (civil society, government, industry, etc.). Columns represent sustainability threads. Cell values show mean scores (0&ndash;100) for each organization type on each thread. Brighter cells indicate higher mean engagement; darker cells indicate silence. Look for: <strong>bright rows</strong> (organizations consistently engaging with sustainability), <strong>dark rows</strong> (consistently silent types), <strong>bright columns</strong> (universally addressed threads like energy), and <strong>dark columns</strong> (systematically excluded threads like disability or nuclear).
+      </div>
+
+      <div class="card mt-2"><div class="card-header">Mean Thread Score by Organization Type</div><div class="card-body"><div id="chart-heatmap" class="chart-container" style="min-height:500px;" role="img" aria-label="Mean thread score by organization type heatmap"></div></div></div>
+
+      <div class="annotation">
+        <strong>Key Patterns.</strong>
+        <strong>Civil society dominance:</strong> Environmental NGOs show the strongest engagement across energy, climate, and policy &mdash; their decades of environmental advocacy produce analytical depth that technocratic governance institutions lack.
+        <strong>Industry&rsquo;s selective disclosure:</strong> Industry statements score moderately on energy (aligning with corporate ESG reporting) but avoid water, nuclear, disability, and labor dimensions &mdash; engaging only where existing disclosure frameworks already require reporting.
+        <strong>Government&rsquo;s shallow breadth:</strong> Government statements touch many threads at low levels but rarely achieve depth on any &mdash; consistent with the 90.6% neutral framing rate that avoids substantive environmental critique.
+        <strong>Religious surprise:</strong> Religious organizations show unexpected strength in ethical/religious ecology, drawing on normative frameworks like Catholic integral ecology and Islamic trusteeship, but limited engagement with technical infrastructure threads.
+        <strong>The accountability insight:</strong> What organizations discuss depends on who they are accountable to. Civil society answers to environmental constituencies. Industry answers to shareholders and regulators. Government answers to multiple stakeholders simultaneously, producing the broadest but shallowest coverage.
+      </div>
+    </div>
+
+    <!-- TAB 4: Top Statements -->
+    <div class="tab-pane" id="tab-top" role="tabpanel" aria-labelledby="trigger-top" tabindex="0">
+
+      <!-- source: data.js TOP_STATEMENTS + PAPER/20260410-results-draft.md §4.3 -->
+      <p class="tab-intro-hook mt-2" style="font-size:0.85rem;color:var(--text-primary);margin-bottom:0.5rem;">
+        <strong>Top Statements</strong> ranks the 29 Tier&nbsp;A governance documents by sustainability engagement depth &mdash; the 0.95% of AI governance worldwide that engages substantively with data-center environmental costs. Civil society organizations (Greenpeace, Sierra Club, NAACP, Stand.earth) dominate; government and industry statements are largely absent from the top tier.
+      </p>
+
+      <div class="annotation mt-2" style="border-left:3px solid var(--accent);background:rgba(56,139,253,0.06);">
+        <strong>Reading the Top Statements Table.</strong>
+        This table ranks the highest-scoring governance statements by sustainability engagement depth, drawn from 3,044 AI governance documents. The <strong>Score</strong> (0&ndash;100) reflects how substantively a statement engages with ecological sustainability across 11 dimensions &mdash; not simply whether it mentions &ldquo;environment&rdquo; but whether it addresses specific infrastructure impacts with concrete detail. <strong>Threads</strong> shows which of the six core dimensions each statement addresses. <strong>GW Risk</strong> flags greenwash potential: statements making sustainability claims without measurable commitments. Only 29 of 3,044 statements reach Tier A (&ge;50).
+      </div>
+
+      <div class="annotation">
+        <strong>What Earns a High Score.</strong>
+        Tier A statements (&ge;50) typically address multiple sustainability threads simultaneously (energy <em>and</em> water <em>and</em> climate targets), identify specific data center impacts rather than invoking sustainability as an abstract principle, and propose concrete governance mechanisms such as mandatory reporting requirements, energy efficiency standards, or community consultation processes. The maximum score in the corpus is 95 (STMT-3087, Royal Academy of Engineering). Tier A statements are disproportionately <strong>problem-framed</strong> &mdash; 69% identify AI infrastructure as an environmental burden, compared to Tier D where 89.2% adopt neutral framing. Substantive engagement requires first acknowledging that large-scale AI systems pose genuine ecological risks.
+      </div>
+
+      <div class="card mt-2">
+        <div class="card-header">Top-Scoring Statements</div>
+        <div class="card-body table-responsive-wrap" tabindex="0" role="region" aria-label="Top-scoring statements table" style="max-height:600px;overflow-y:auto;">
+          <table class="data-table" id="table-top">
+            <caption class="visually-hidden">Top-scoring statements by sustainability engagement score, showing statement key, organization, year, score, tier, threads engaged, and greenwash risk</caption>
+            <thead><tr><th>#</th><th>Key</th><th>Organization</th><th>Year</th><th>Score</th><th>Tier</th><th>Threads</th><th>GW Risk</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="annotation">
+        <strong>Who Takes Sustainability Seriously.</strong>
+        <strong>Civil society organizations dominate the top tier:</strong> environmental NGOs such as Greenpeace, the Sierra Club, the NAACP, and Stand.earth consistently provide the most substantive sustainability analysis. Government and intergovernmental statements, which form the bulk of AI governance output, rarely appear in the top 30. Even among top statements, <strong>thread coverage concentrates on energy, climate, and policy</strong> &mdash; water and nuclear remain largely absent even from the most engaged governance. The low greenwash risk scores in this table are themselves significant: the statements that score highest on substance also score lowest on performative sustainability claims.
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #3fb950;">
+        <strong>The CUPE Exception &mdash; When Constituency Shapes Governance.</strong>
+        STMT-2599, from the <strong>Canadian Union of Public Employees</strong> (CUPE), is the only statement in the corpus assembling the full conjunction of disability, environment, and labor in the rubric's terms. It scores nonzero on <em>all three</em> underrepresented dimensions: gendered labor (35), disability (20 &mdash; the corpus maximum), and informal economy (15). Two other statements exceed the disability floor: <strong>PWDA</strong> (People with Disability Australia, STMT-1632, scoring 15) &mdash; a disability-led DPO whose AI governance submission addresses anti-discrimination and mandatory disability impact assessments &mdash; and <strong>OHCHR</strong> (STMT-2952, scoring 10), a UN Special Rapporteur report on digital welfare states. All three above-floor statements engage disability through non-environmental pathways (labor rights, disability rights, welfare rights); the score ranking reflects the rubric's environmental framing rather than a hierarchy of organizational contributions. CUPE represents over 700,000 Canadian public sector workers &mdash; including disabled workers, workers in feminized care and clerical occupations, and workers in precarious contract arrangements. Constituency-based accountability structures expand the epistemic scope of governance, but the specific conjunction each organization produces depends on its institutional mandate.
+      </div>
+    </div>
+
+    <!-- TAB 5: Timeline -->
+    <div class="tab-pane" id="tab-timeline" role="tabpanel" aria-labelledby="trigger-timeline" tabindex="0">
+
+      <!-- source: data.js YEAR_TIMELINE + PAPER/20260410-results-draft.md §4.5 -->
+      <p class="tab-intro-hook mt-2" style="font-size:0.85rem;color:var(--text-primary);margin-bottom:0.5rem;">
+        <strong>Timeline</strong> tracks how governance engagement with sustainability has evolved over time. Substantive attention accelerated sharply from 2023 onward &mdash; driven by generative AI scaling, investigative journalism, and civil society advocacy &mdash; but corporate infrastructure decisions consistently outpace governance responses by 12&ndash;18 months.
+      </p>
+
+      <div class="annotation mt-2" style="border-left:3px solid var(--accent);background:rgba(56,139,253,0.06);">
+        <strong>Reading the Timeline.</strong>
+        This dual-axis chart tracks the evolution of AI governance engagement with sustainability. The <strong>bars</strong> (left axis) show total sustainability-relevant governance statements per year. The <strong>line</strong> (right axis) tracks Tier A statements per year &mdash; those scoring &ge;50, indicating deep substantive engagement. The temporal pattern reveals not only when governance volume increased but whether that increase brought genuine analytical depth or merely more surface-level references.
+      </div>
+
+      <div class="annotation">
+        <strong>The Pre-2023 Baseline &mdash; Sustainability as Afterthought.</strong>
+        Before the generative AI boom, sustainability appeared in AI governance primarily as a decorative principle. Statements from 2016&ndash;2022 might list &ldquo;environmental sustainability&rdquo; alongside other desiderata &mdash; fairness, transparency, accountability &mdash; but rarely devoted more than a sentence to what sustainability means for AI infrastructure specifically. Problem-framing was nearly nonexistent: only 4 governance statements across all pre-2023 years identified AI infrastructure as an environmental burden.
+      </div>
+
+      <div class="card mt-2"><div class="card-header">Sustainability Mentions Over Time</div><div class="card-body"><div id="chart-timeline" class="chart-container" role="img" aria-label="Sustainability mentions over time bar and line chart"></div></div></div>
+
+      <div class="annotation">
+        <strong>The ChatGPT Inflection &mdash; Public Concern Drives Governance.</strong>
+        The sharp acceleration from 2023 onward is not coincidental. The rapid scaling of generative AI infrastructure &mdash; massive new data center construction, rising electricity demand straining regional grids, and water consumption controversies in drought-affected communities &mdash; generated sustained public concern that catalyzed governance attention. <strong>35 problem-framed statements emerged after 2023, compared to only 4 in all prior years combined.</strong> The 2024&ndash;2025 spike reflects a convergence of civil society advocacy campaigns, EU regulatory attention, and investigative journalism exposing the gap between corporate sustainability pledges and actual resource consumption.
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #f85149;">
+        <strong>The Temporal Lag Problem &mdash; Governance After the Fact.</strong>
+        Corporate infrastructure decisions consistently outpace governance responses by 12&ndash;18 months. The clearest example: nuclear-data-center agreements (Microsoft&ndash;TMI, Google&ndash;Kairos, Amazon&ndash;Talen, Meta RFP) were all signed in Q3&ndash;Q4 2024, yet <strong>zero governance instruments have achieved Tier A engagement with nuclear energy for AI</strong>. By the time governance frameworks address nuclear-AI questions, the reactor restart decisions, site selections, and grid interconnection agreements will already be locked in. Communities affected by data center siting currently have no governance framework to draw upon when corporate announcements are made &mdash; a structural democratic deficit in anticipatory governance.
+      </div>
+    </div>
+
+    <!-- TAB 6: Greenwash and Framing -->
+    <div class="tab-pane" id="tab-greenwash" role="tabpanel" aria-labelledby="trigger-greenwash" tabindex="0">
+
+      <!-- source: PAPER/20260410-methods-draft.md §3.5 + PAPER/20260410-results-draft.md §4.4 -->
+      <p class="tab-intro-hook mt-2" style="font-size:0.85rem;color:var(--text-primary);margin-bottom:0.5rem;">
+        <strong>Greenwash &amp; Framing</strong> examines how organizations position AI infrastructure relative to environmental sustainability. The central finding: solution-framed statements carry 2.3&times; higher greenwash risk than problem-framed ones, and 76.2% of all scored statements adopt neutral framing &mdash; sustainability as a word without a position.
+      </p>
+
+      <div class="annotation mt-2" style="border-left:3px solid var(--accent);background:rgba(56,139,253,0.06);">
+        <strong>Greenwash and Framing &mdash; How Organizations Frame Sustainability.</strong>
+        This tab examines two complementary dimensions of governance discourse: <strong>framing orientation</strong> (whether organizations present AI infrastructure as an environmental problem, solution, both, or neither) and <strong>greenwash risk</strong> (whether sustainability claims are substantive or performative). Together, these lenses reveal institutional incentives: who can afford to name environmental problems, who benefits from framing AI as a sustainability solution, and whose silence serves strategic interests. Of the 302 statements with nonzero sustainability scores, 76.2% adopt neutral framing &mdash; a finding that is itself analytically significant.
+      </div>
+
+      <div class="card mt-2"><div class="card-header">Framing Orientation by Organization Type</div>
+      <div class="card-body">
+      <div class="annotation" style="margin-top:0;">
+        <strong>Four Framing Categories.</strong>
+        <strong>Problem-framed</strong> (40 statements, 13.2%): identify AI infrastructure as an environmental burden requiring governance intervention.
+        <strong>Solution-framed</strong> (26 statements, 8.6%): present AI as a tool for achieving sustainability goals.
+        <strong>Both</strong> (6 statements, 2.0%): acknowledge environmental costs while simultaneously claiming AI as a sustainability solution.
+        <strong>Neutral</strong> (230 statements, 76.2%): mention sustainability without taking an analytical position. The distribution matters because framing shapes what governance actors consider actionable.
+      </div>
+      <div id="chart-framing-org" class="chart-container-sm" role="img" aria-label="Framing orientation by organization type diverging bar chart"></div>
+      </div></div>
+
+      <div class="annotation">
+        <strong>Framing by Organization Type &mdash; Institutional Incentives at Work.</strong>
+        <strong>Civil society</strong> (33.3% problem-framed) reflects its advocacy mission &mdash; environmental NGOs exist to identify environmental problems. <strong>Intergovernmental</strong> bodies (27.8% solution-framed) reflect institutional commitment to technology-for-development narratives. <strong>Government&rsquo;s 90.6% neutrality</strong> may reflect &ldquo;discursive closure&rdquo; (Fricker, 2007; Dotson, 2011): government actors positioned between industry investment interests and environmental accountability narrow their governance discourse to exclude problem-identification as a risk-avoidance strategy. Only 3 government statements are problem-framed &mdash; despite governments being the primary regulatory authority for data center environmental impacts &mdash; suggesting structural suppression of governance&rsquo;s problem-identification function.
+      </div>
+
+      <div class="card mt-3"><div class="card-header">Greenwash Risk by Organization Type</div><div class="card-body"><div id="chart-greenwash" class="chart-container-sm" role="img" aria-label="Greenwash risk by organization type bar chart"></div></div></div>
+
+      <div class="annotation">
+        <strong>What Greenwash Risk Measures.</strong>
+        The greenwash risk score (0&ndash;100) identifies statements that make sustainability claims without concrete commitments, measurable targets, or accountability mechanisms. A high score signals governance that <em>appears</em> substantive but lacks the specificity needed to drive meaningful environmental outcomes. High greenwash risk paired with low actionability indicates performative engagement &mdash; sustainability as brand management rather than governance.
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #f85149;">
+        <strong>Greenwash Follows Framing &mdash; The Central Finding.</strong>
+        Solution-framed statements carry <strong>2.3&times; higher greenwash risk</strong> (mean 14.0) than problem-framed statements (mean 6.2). Statements with dual framing &mdash; acknowledging costs while claiming AI as a solution &mdash; carry the <em>highest</em> risk (mean 22.5). This pattern suggests that framing AI as an environmental solution serves as a discursive mechanism for minimizing perceived environmental costs. Statements that acknowledge problems while claiming solutions are the most likely to be performative.
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #f0883e;">
+        <strong>Tier-Framing Interaction &mdash; Depth Requires Problem Recognition.</strong>
+        Tier A statements (deep substantive engagement) are <strong>69% problem-framed</strong>. Tier D statements (incidental mentions) are <strong>89.2% neutral</strong>. Substantive engagement with sustainability <em>requires</em> identifying environmental costs &mdash; governance that avoids problem-framing cannot achieve analytical depth. This has direct institutional implications: governance frameworks designed to be &ldquo;balanced&rdquo; or &ldquo;stakeholder-neutral&rdquo; may be structurally incapable of producing substantive sustainability analysis.
+      </div>
+
+      <div class="card mt-3"><div class="card-header">Highest Greenwash Risk Statements</div>
+        <div class="card-body table-responsive-wrap" tabindex="0" role="region" aria-label="Greenwash framing analysis table" style="max-height:400px;overflow-y:auto;">
+          <table class="data-table" id="table-greenwash">
+            <caption class="visually-hidden">Statements with highest greenwash risk scores, showing statement key, organization, type, greenwash risk, actionability, and overall sustainability score</caption>
+            <thead><tr><th>Key</th><th>Organization</th><th>Type</th><th>GW Risk</th><th>Actionability</th><th>Overall</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="annotation">
+        <strong>Reading the Greenwash Table.</strong>
+        Look for the gap between <strong>GW Risk</strong> and <strong>Overall Score</strong>: a high GW Risk with a low Overall Score indicates statements making sustainability claims without substantive engagement &mdash; the clearest signal of performative governance. Also examine the <strong>Organization Type</strong> column: certain types are systematically overrepresented in high-risk statements. The <strong>Actionability</strong> column provides a complementary measure &mdash; low actionability alongside high greenwash risk is the diagnostic signature of symbolic compliance.
+      </div>
+    </div>
+
+    <!-- TAB 7: Missing Voices -->
+    <div class="tab-pane" id="tab-extra" role="tabpanel" aria-labelledby="trigger-extra" tabindex="0">
+
+      <!-- source: PAPER/20260410-discussion-draft.md §5.2-5.4 -->
+      <p class="tab-intro-hook mt-2" style="font-size:0.85rem;color:var(--text-primary);margin-bottom:0.5rem;">
+        <strong>Missing Voices</strong> maps five dimensions that governance systematically excludes &mdash; disability, gendered labor, informal economy, religious environmental ethics, and geographic coverage gaps. These are not minor omissions: empirical evidence of harm exists for each, but governance institutions lack the epistemic frameworks to accommodate it. Disability is the sharpest boundary: 26 of 27 scored statements score exactly 5 (the floor), with a corpus maximum of 20.
+      </p>
+
+      <div class="annotation mt-2" style="border-left:3px solid var(--accent);background:rgba(56,139,253,0.06);">
+        <strong>Structural Exclusion &mdash; What Governance Cannot See.</strong>
+        This tab maps five dimensions that governance systematically excludes. These are not minor omissions &mdash; they represent structural gaps where empirical evidence of harm exists but governance institutions lack the epistemic frameworks to accommodate it. The study&rsquo;s core contribution is identifying not just <em>what</em> governance omits, but <em>why</em>: dominant epistemic frameworks inherited from the AI ethics community are structurally deficient, not merely incomplete. This is what epistemic injustice theory calls &ldquo;contributory injustice&rdquo; (Dotson, 2011) &mdash; the collective failure to develop interpretive resources adequate to the experiences of marginalized populations.
+      </div>
+
+      <div class="d-flex gap-2 mb-2 flex-wrap mt-2" style="font-size:0.78rem;">
+        <a href="#extra-coverage" class="badge bg-secondary text-decoration-none">Coverage Gaps</a>
+        <a href="#extra-geo" class="badge bg-secondary text-decoration-none">Geographic</a>
+        <a href="#extra-dims" class="badge bg-secondary text-decoration-none">Dimensions</a>
+        <a href="#extra-lit" class="badge bg-secondary text-decoration-none">Literature</a>
+      </div>
+
+      <div class="card mt-2" id="extra-coverage"><div class="card-header">Missing Voices &mdash; Dimensions Coverage</div><div class="card-body"><div id="chart-extra" class="chart-container-sm" role="img" aria-label="Missing voices dimensions coverage bar chart"></div></div></div>
+
+      <div class="annotation" id="critical-gap-annotation">
+        <strong>Critical gap:</strong> <span id="critical-gap-text"></span>
+        These gaps point to a need for external source acquisition beyond the Tapestry.
+      </div>
+
+      <div class="annotation">
+        <strong>Coverage Hierarchy.</strong>
+        Environmental justice has the broadest coverage (102 nonzero statements, max=90) but most scores cluster in the 5&ndash;15 range &mdash; justice appears as a modifier (&ldquo;we support environmental justice&rdquo;) rather than an independent analytical lens. Religious/ethical ecology (53 nonzero, max=55) draws on existing normative frameworks but remains marginal. The three most excluded dimensions &mdash; gendered labor (25 nonzero, max=40), disability (27 nonzero, max=20), and informal economy (17 nonzero, max=25) &mdash; represent what governance <em>cannot</em> discuss because it inherits the disciplinary boundaries of AI ethics, which has no tradition of engaging with labor economics, disability studies, or environmental health.
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #f85149;">
+        <strong>Disability: The Structural Exclusion Finding.</strong>
+        The disability dimension reveals governance&rsquo;s sharpest epistemic boundary. Of 27 statements with any disability score, <strong>26 score exactly 5</strong> (the minimum nonzero value). The corpus maximum is 20 &mdash; a ceiling unlike any other dimension. This is <em>not</em> a measurement artifact &mdash; it accurately reflects the limit of what governance institutions are capable of knowing. Two parallel causal pathways connect data centers to disability-specific harms, but no governance statement traces either:
+        <br><br>
+        <strong>Respiratory pathway:</strong> Data center backup diesel generators emit particulate matter and nitrogen oxides, disproportionately harming people with respiratory conditions. Ren et al. (2024) project 600,000 asthma cases and 1,300 premature deaths annually from US data center pollution by 2030. The Kapor Foundation (2025) found one-third of California data centers are in the worst 10% for diesel particulate exposure. Disadvantaged communities bear 200&times; the per-household environmental burden, and disabled people are overrepresented in these communities (EPA, 2016).
+        <br><br>
+        <strong>Grid reliability pathway:</strong> Data centers strain electrical grids, increasing outage frequency. Power outages are life-threatening for people dependent on powered medical equipment. Data center load is projected to reach 12% of US electricity by 2028.
+        <br><br>
+        Why governance is blind: no governance-producing institution has disability constituencies or staff expertise at the intersection of disability studies, environmental health, electrical grid engineering, and urban planning. The <em>Lancet Planetary Health</em> systematic review (Stein et al., 2024) found that only 1% of climate adaptation research considers disability. AI governance&rsquo;s gap reflects a broader failure to connect infrastructure impacts to disability-specific harms.
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #f0883e;">
+        <strong>Gendered Labor: Invisible Work in the AI Supply Chain.</strong>
+        Only 25 statements engage with gendered labor (max=40), and none treat it as a central sustainability concern. Yet the evidence is clear: women face 4.7% vs 2.4% GenAI task exposure in data annotation and content moderation (Williams et al.). Platform labor is feminized and precarious (ILO/NASK). Data annotation workers experience &ldquo;embedded ethics&rdquo; &mdash; their labor shapes AI systems but remains invisible (Posada, 2022). Fairwork (2025) documents 31% wage theft rates in cloudwork platforms. Governance cannot see this labor because AI is conceptualized as a technology product rather than a labor process &mdash; the analytical frame excludes the human work that produces training data.
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #f0883e;">
+        <strong>Informal Economy: The Global Burden.</strong>
+        Only 17 statements mention the informal economy (max=25). None addresses the documented health costs of e-waste processing in the Global South, where data center hardware is dismantled by informal workers. None addresses the &ldquo;ghost work&rdquo; (Gray &amp; Suri, 2019) that powers AI systems &mdash; an invisible labor force of precarious data workers, predominantly in low-income countries. The environmental and labor costs of AI infrastructure are disproportionately borne by workers who are invisible to governance &mdash; a hidden subsidy from the Global South to the Global North.
+      </div>
+
+      <div class="annotation" style="border-left:3px solid #8b949e;">
+        <strong>Religious Environmental Ethics: Normative Resources Ignored.</strong>
+        Catholic integral ecology (<em>Laudato Si&rsquo;</em>, Gozum &amp; Eballo, 2025) frames environmental exploitation and social injustice as inseparable. Islamic trusteeship (<em>khalifah</em>, Ali et al., 2025) establishes humans as stewards of creation with obligations to future generations. Both traditions offer concepts &mdash; intergenerational obligation, sacred trust, interconnectedness of social and environmental harm &mdash; directly relevant to technology governance. With 53 nonzero entries (max=55), there is <em>some</em> engagement, but governance&rsquo;s secular-technocratic framing systematically excludes these normative resources even when they offer analytical depth that secular frameworks lack.
+      </div>
+
+      <!-- Geographic Coverage Section -->
+      <div class="card mt-3" id="extra-geo">
+        <div class="card-header">Geographic Coverage &mdash; Governance vs. Reality Gap</div>
+        <div class="card-body">
+          <div class="annotation" style="margin-top:0;border-left:3px solid var(--accent);background:rgba(56,139,253,0.06);">
+            <strong>The Governance-Reality Paradox in Spatial Terms.</strong>
+            This section maps the paradox that defines the study: governance engagement is strongest where data center regulation is already mature and weakest where expansion is most rapid. The three regions below represent the sharpest governance-reality gaps &mdash; places where the environmental costs of AI infrastructure are accelerating while governance remains largely silent.
+          </div>
+          <div class="row g-3 mt-2" id="geo-region-cards"></div>
+          <div id="chart-geo-gap" class="chart-container-sm mt-3" role="img" aria-label="Geographic governance coverage gap bar chart"></div>
+        </div>
+      </div>
+
+      <div class="annotation">
+        <strong>Geographic Gap Analysis.</strong>
+        <strong>Central &amp; Eastern Europe</strong> (102 statements, 15.7% engagement): Hungary and Slovakia face data center power exceeding 10% of national electricity within five years, but governance is largely silent.
+        <strong>Southeast Asia</strong> (92 statements, 19.6% engagement): Energy demand growing from 9 TWh (2024) to 68 TWh (2030). Malaysia has 2.4 GW under development. Singapore (32 of 92 SEA statements, 34.8%) is a regional outlier with stringent efficiency standards &mdash; demonstrating that governance correlates with institutional capacity, not with magnitude of environmental impact.
+        <strong>Middle East &amp; North Africa</strong> (155 statements, 16.1% engagement): Gulf states pursuing trillion-dollar AI data center ambitions in one of the world&rsquo;s most water-stressed regions. Saudi Arabia contributes 39 statements, almost none addressing environmental costs.
+        This gap is maintained by a <strong>policy feedback loop</strong>: under-governed regions lack institutional capacity &rarr; data center operators expand unregulated &rarr; economic dependency reduces political incentives to impose requirements &rarr; governance capacity declines further.
+      </div>
+
+      <div id="extra-dims"></div>
+      <div class="row g-3" id="extra-dim-cards"></div>
+
+      <!-- Literature Context Container -->
+      <div id="literature-context-container"></div>
+
+      <div class="annotation mt-3" style="border-left:3px solid #3fb950;">
+        <strong>Implications for Institutional Reform.</strong>
+        The findings across all five underrepresented dimensions converge on a single insight: this is not an information deficit &mdash; the empirical evidence exists. It is a structural deficiency in who produces governance and what knowledge they have access to. Adding &ldquo;sustainability&rdquo; as a principle to existing frameworks does not address contributory injustice because governance-producing institutions still lack the constituency structures needed to identify which sustainability harms matter and to whom. Reform requires <strong>epistemic intervention</strong> &mdash; changing what governance is <em>capable of knowing</em>: mandating disability representation on AI ethics boards and standards-setting bodies; requiring environmental impact assessments to include disability-specific health outcomes; funding disability-led, worker-led, and community-led governance organizations. The contrast methodology developed in this study &mdash; scoring governance against external literature to identify patterned absences &mdash; is replicable across any domain where governance may systematically exclude affected communities&rsquo; knowledge: content moderation, platform labor, algorithmic decision-making, and criminal justice risk assessment.
+      </div>
+    </div>
+
+    <!-- TAB 8: Methods -->
+    <div class="tab-pane" id="tab-methods" role="tabpanel" aria-labelledby="trigger-methods" tabindex="0">
+
+      <!-- source: PAPER/20260410-methods-draft.md §3.1-3.9 -->
+      <p class="tab-intro-hook mt-2" style="font-size:0.85rem;color:var(--text-primary);margin-bottom:0.5rem;">
+        <strong>Methods</strong> details the hybrid keyword&ndash;LLM scoring pipeline, expert council design, test&ndash;retest reliability (ICC&nbsp;=&nbsp;0.977), false-negative assessment (2.7%), contrast methodology, limitations, and sensitivity analyses. All numbers and methods on this dashboard are fully reproducible from the Tapestry database.
+      </p>
+
+      <div class="card mt-2">
+        <div class="card-header">Methodology</div>
+        <div class="card-body" style="font-size:0.85rem;">
+
+          <div class="annotation" style="border-left:3px solid var(--accent);padding:0.8rem 1rem;margin-bottom:1.2rem;background:rgba(56,139,253,0.06);">
+            <strong>How This Analysis Was Conducted.</strong>
+            This dashboard presents results from a systematic analysis of 3,044 AI governance statements from the Tapestry database (Lin, 2026). A hybrid keyword-LLM scoring pipeline first filtered statements with sustainability-relevant keywords (431 candidates, 14.1% of corpus), then scored each across 11 dimensions using a multi-prompt LLM pipeline. Of these, 302 received nonzero scores and only 29 achieved Tier A (&ge;50, deep engagement). The 11 dimensions span 6 core threads (energy, water, nuclear, climate, cost tracking, policy) and 5 underrepresented dimensions identified through a 16-member expert council process (environmental justice, religious/ethical ecology, gendered labor, disability, informal economy). Three additional quality indicators (greenwash risk, actionability, overall composite) assess governance quality beyond content.
+          </div>
+
+          <details style="margin-bottom:1.2rem;">
+            <summary style="color:var(--accent);cursor:pointer;font-weight:600;">How to Read This Dashboard</summary>
+            <div class="mt-2" style="font-size:0.82rem;color:var(--text-secondary);">
+              <p><strong>What the scores mean.</strong> Each dimension is scored 0&ndash;100 based on the depth and specificity of a statement&rsquo;s engagement with that sustainability concern. 0 = no relevant content. 1&ndash;24 = passing or incidental mention (Tier C/D). 25&ndash;49 = moderate engagement (Tier B). 50&ndash;100 = substantial to core treatment (Tier A). Across scored statements, the mean is 11.8 and the median is 8. The maximum is 95.</p>
+
+              <p><strong>What the tiers mean.</strong> Tier A (&ge;50): deep substantive engagement &mdash; addresses specific data center impacts, proposes governance mechanisms. Tier B (25&ndash;49): moderate engagement with some specificity. Tier C (10&ndash;24): minimal &mdash; mentions sustainability as context. Tier D (1&ndash;9): incidental keyword match with no substantive content. Zero: no sustainability content detected after LLM review.</p>
+
+              <p><strong>What &ldquo;greenwash risk&rdquo; means.</strong> Score identifying statements making sustainability claims without concrete commitments, measurable targets, or accountability mechanisms. Solution-framed statements show 2.3&times; the greenwash risk of problem-framed statements.</p>
+
+              <p><strong>The 11 scored dimensions.</strong> Six core threads: energy, water, nuclear/energy sources, climate, cost tracking, policy. Five extended dimensions: environmental justice, religious/ethical ecology, gendered labor, disability, informal economy.</p>
+
+              <p><strong>The study&rsquo;s key insight.</strong> This is a study of discursive <em>absence</em> &mdash; what governance fails to say about the material infrastructure AI requires. Engagement is overwhelmingly shallow and systematically excludes dimensions requiring knowledge from outside the technology policy community.</p>
+
+              <ul style="margin-bottom:0;">
+                <li><strong>Overview</strong> &mdash; Key metrics, tier distribution, org-type engagement, and governance-reality paradox.</li>
+                <li><strong>Thread Analysis</strong> &mdash; Comparison of the 6 sustainability threads, the nuclear void, the water blind spot, and co-occurrence patterns.</li>
+                <li><strong>Org &times; Thread</strong> &mdash; How organizational accountability structures shape thread engagement.</li>
+                <li><strong>Top Statements</strong> &mdash; The highest-scoring statements, the CUPE exception, and what earns a high score.</li>
+                <li><strong>Timeline</strong> &mdash; The pre-2023 baseline, the ChatGPT inflection, and the temporal lag problem.</li>
+                <li><strong>Greenwash and Framing</strong> &mdash; Framing analysis, greenwash risk, discursive closure, and the tier-framing interaction.</li>
+                <li><strong>Missing Voices</strong> &mdash; Five structurally excluded dimensions, disability as epistemic boundary, geographic governance-reality gap, and institutional reform implications.</li>
+                <li><strong>Methods</strong> &mdash; Pipeline details, reliability, limitations, contrast methodology, and sensitivity analyses.</li>
+              </ul>
+            </div>
+          </details>
+
+          <h6 style="color:var(--accent)">Hybrid Keyword + LLM Scoring Pipeline</h6>
+          <p><strong>Phase 1 — Keyword Pre-Filter:</strong> 2,820 text extracts scanned against 6-thread keyword architecture.
+          Scoring: strong (×15) + medium (×5) − false-positive context (×10) + title bonus (20), clamped [0,100].
+          Co-occurrence boosting upgrades medium→strong when contextually validated.</p>
+
+          <p><strong>Phase 2 — LLM Deep Read:</strong> 351 candidates (keyword score ≥ 10) sent to Claude for contextual analysis.
+          LLM scores 6 threads + 5 additional dimensions (justice, ethics/religious, gendered labor, disability, informal economy)
+          plus greenwash risk (0-100) and actionability (0-100). LLM scores override keywords where they differ.</p>
+
+          <h6 style="color:var(--accent)" class="mt-3">Expert Council</h6>
+          <p>16-member council: 12 domain experts (climate, water, energy, nuclear, policy, economics, justice,
+          measurement, corporate sustainability, AI systems, infrastructure, toxicology) + 4 ethics/religious
+          voices (environmental ethics, Abrahamic traditions, Eastern/Indigenous traditions, theology & technology).</p>
+
+          <h6 style="color:var(--accent)" class="mt-3">Source Corpus</h6>
+          <p>Tapestry — The Global AI Principles & Governance Database (Lin, 2026). ~3,044 statements from
+          ~3,460 organizations across all sectors and regions. Text extracts available for ~2,820 statements.</p>
+
+          <h6 style="color:var(--accent)" class="mt-3">Dimension Count Note</h6>
+          <p style="font-size:0.82rem;color:var(--text-secondary);">Main tabs filter to sust_overall &gt; 0. The Missing Voices tab includes all statements with nonzero dimension scores regardless of overall score.</p>
+
+          <div class="annotation mt-3">
+            <strong>Scoring Reliability and What Low Reliability Reveals.</strong>
+            The scoring pipeline achieves excellent reliability on core dimensions: ICC(2,1) = 0.977 overall, 0.987 for energy, 0.983 for climate, 0.949 for water. However, disability (ICC = 0.13) and informal economy (ICC = 0.065) show near-floor reliability &mdash; <em>not</em> because measurement is unstable, but because the distributions are near-zero (almost no governance content exists to score). Low ICC on these dimensions is itself a meaningful finding: it reflects genuine epistemic absence in governance, not instrument failure.
+          </div>
+
+          <div class="annotation">
+            <strong>Pipeline Efficiency and the False Negative Tradeoff.</strong>
+            The hybrid approach reduces computational cost by 85% compared to scoring all 3,044 statements with LLM. The keyword filter&rsquo;s false-negative rate is 2.7% (Wilson 95% CI: 0.7&ndash;9.2%), meaning approximately 8 statements may contain sustainability content missed by keyword pre-filtering. The one confirmed rescue (STMT-2663, UNEP, score=90) is exceptional; FN-recovered statements tend to score lower.
+          </div>
+
+          <div class="annotation" style="border-left:3px solid #f0883e;">
+            <strong>Critical Limitations.</strong>
+            Three limitations readers should bear in mind: (1) The 16-member &ldquo;council&rdquo; consists of LLM-generated personas, not human domain experts &mdash; creating a recursive limitation where LLM scores governance using a rubric designed through LLM-mediated deliberation. (2) Only 1 of 21 contrast sources was authored <em>by</em> affected communities; 20 were authored <em>about</em> affected populations &mdash; the study partially reproduces the epistemic asymmetry it identifies. (3) Eight environmental impact categories fall outside the rubric&rsquo;s scope: land use change, e-waste, critical mineral extraction, toxic air emissions (NOx, PM2.5), fluorinated gas leakage, biodiversity impacts, thermal pollution, and noise pollution.
+          </div>
+
+          <div class="annotation">
+            <strong>Contrast Methodology &mdash; Measuring What Governance Omits.</strong>
+            The study&rsquo;s analytical framework is grounded in epistemic injustice theory (Dotson, 2011; Fricker, 2007). 21 external sources across 5 thematic streams (disability &amp; environmental burden, gendered labor in data supply chains, informal economy impacts, religious environmental ethics, geographic/environmental burden) provide benchmarks against which governance is evaluated. The approach asks: whose knowledge is structurally excluded and what institutional mechanisms produce that exclusion? When 0 of 3,044 statements address disability and environmental burden together, this is not an oversight &mdash; it reflects whose voices are present in governance and whose are not.
+          </div>
+
+          <h6 style="color:var(--accent)" class="mt-3">Known Data Issues</h6>
+          <ul style="font-size:0.82rem;color:var(--text-secondary);">
+            <li><strong>STMT-3016</strong> (ALBA-TCP 24th Summit Declaration): Source domain expired (Namecheap parking page). Permanently unscoreable &mdash; 14-character extract.</li>
+            <li><strong>STMT-2663</strong> (UNEP AI Environmental Impact): Re-extracted via Playwright from wedocs.unep.org in Session 6. Re-scored: overall 90, Tier A. Calibration check: mean deviation 1.4 pts across 5 statements.</li>
+          </ul>
+
+          <details class="mt-3" style="font-size:0.82rem;">
+            <summary style="color:var(--accent);cursor:pointer;font-weight:600;">Sensitivity Analysis</summary>
+            <div class="mt-2">
+
+              <h6 style="color:var(--accent)">Keyword Threshold Sensitivity</h6>
+              <p>The keyword pre-filter threshold determines how many statements enter the LLM scoring pool.
+              The baseline threshold is 10 (overall keyword score). Results at alternative thresholds:</p>
+              <table class="theme-table" style="font-size:0.82rem;max-width:600px;">
+                <caption class="visually-hidden">Keyword pre-filter threshold sensitivity analysis showing candidate counts and tier losses at alternative thresholds (5, 10 baseline, and 15)</caption>
+                <thead><tr><th>Threshold</th><th>Candidates</th><th>Delta</th><th>Tier A Lost</th><th>Tier B Lost</th></tr></thead>
+                <tbody>
+                  <tr><td>5</td><td>429</td><td>&minus;2</td><td>0</td><td>0</td></tr>
+                  <tr style="font-weight:bold;"><td>10 (baseline)</td><td>431</td><td>0</td><td>&mdash;</td><td>&mdash;</td></tr>
+                  <tr><td>15</td><td>405</td><td>&minus;26</td><td>1</td><td>2</td></tr>
+                </tbody>
+              </table>
+              <p style="color:var(--text-secondary);">At threshold 15, one Tier A statement is lost: <strong>STMT-2663</strong> (UNEP, overall=90) which was manually added with no keyword match.
+              Two Tier B statements are also lost: STMT-2471 (IKEA, overall=30) and STMT-2525 (Ghana MoCDTI/GIZ, overall=28), both with keyword score=10.
+              The threshold 10 baseline is conservative &mdash; lowering to 5 adds only 2 more candidates (both already in the pool via manual rescue).</p>
+
+              <h6 style="color:var(--accent)" class="mt-3">Tier Boundary Fragility</h6>
+              <p>Percentage of scored statements (N=302) within &plusmn;5 points of each tier boundary:</p>
+              <table class="theme-table" style="font-size:0.82rem;max-width:500px;">
+                <caption class="visually-hidden">Tier boundary fragility analysis showing the percentage of scored statements within plus or minus 5 points of each tier classification threshold</caption>
+                <thead><tr><th>Boundary</th><th>Tiers</th><th>Within &plusmn;5pts</th><th>% Fragile</th></tr></thead>
+                <tbody>
+                  <tr><td>50</td><td>A / B</td><td>6</td><td>2.0%</td></tr>
+                  <tr><td>25</td><td>B / C</td><td>16</td><td>5.3%</td></tr>
+                  <tr><td>15</td><td>C / D</td><td>96</td><td>31.8%</td></tr>
+                  <tr><td>1</td><td>D / zero</td><td>51</td><td>16.9%</td></tr>
+                </tbody>
+              </table>
+              <p style="color:var(--text-secondary);">The A/B boundary (50) is highly stable. The C/D boundary (15) is fragile &mdash;
+              31.8% of scored statements cluster near this cutoff. However, Tier C and D are both below the substantive-engagement
+              threshold, so boundary movement between them has minimal impact on key findings.</p>
+
+              <h6 style="color:var(--accent)" class="mt-3">Worst-Case False Negative Impact</h6>
+              <p>At the 95% CI upper bound FN rate (9.2%, vs. 2.7% observed), up to <strong>220</strong> additional
+              statements from the zero-scoring pool (N=2,389) could enter the scored pool. Proportional estimates suggest
+              up to 15 additional Tier A and 8 additional Tier B statements. However, FN-recovered statements tend to score
+              lower &mdash; the one confirmed FN rescue (STMT-2663, UNEP, overall=90) is exceptional. Realistically,
+              the Tier A count could range from 29 to ~35&ndash;40, but the distribution of themes and org types
+              would remain stable. Key findings (civil society dominance, energy-policy co-occurrence) are robust.</p>
+
+            </div>
+          </details>
+
+          <div class="provenance">
+            Dashboard v3.3.1 | Generated: 2026-04-13 | Pipeline: hybrid_sustainability_scorer.py (Phase 1+2) &rarr; consolidate_llm_results.py &rarr; generate_dashboard.py<br>
+            Data: CEI-AI-Statements/SUSTAINABILITY/ | Council: 16-member (see METHODS/20260410-council-composition.md) | v3.3 adds first-time-reader onboarding (S18); v3.3.1 reconciles generator with live dashboard (S19)
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js?v=3.3.1"></script>
+
+</body>
+</html>
